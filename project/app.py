@@ -12,6 +12,9 @@ import joblib
 import os
 from PIL import Image
 
+# Get the base directory of app.py to resolve paths correctly in deployment
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # ---------------------------------------------------------
 # App Configuration (Must be the first Streamlit command)
 # ---------------------------------------------------------
@@ -94,9 +97,9 @@ st.markdown("""
 @st.cache_resource
 def load_model_components():
     try:
-        model = joblib.load('models/best_model.pkl')
-        scaler = joblib.load('models/scaler.pkl')
-        encoder = joblib.load('models/label_encoder.pkl')
+        model = joblib.load(os.path.join(BASE_DIR, 'models', 'best_model.pkl'))
+        scaler = joblib.load(os.path.join(BASE_DIR, 'models', 'scaler.pkl'))
+        encoder = joblib.load(os.path.join(BASE_DIR, 'models', 'label_encoder.pkl'))
         return model, scaler, encoder
     except FileNotFoundError:
         st.error("⚠️ Error: Model files not found. Please run `python pipeline.py` first.")
@@ -199,7 +202,9 @@ def main():
     
     plot_choice = st.selectbox("Select telemetry visualizer:", list(plots.keys()))
     
-    plot_path = plots.get(plot_choice)
+    plot_rel_path = plots.get(plot_choice)
+    plot_path = os.path.join(BASE_DIR, plot_rel_path) if plot_rel_path else None
+    
     if plot_path and os.path.exists(plot_path):
         st.image(plot_path, caption=plot_choice, use_container_width=True)
     else:
